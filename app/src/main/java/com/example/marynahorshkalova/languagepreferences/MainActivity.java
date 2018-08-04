@@ -6,6 +6,9 @@ import android.content.SharedPreferences;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -14,13 +17,40 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    ArrayList<String> languages;
+    // SET UP MENU
+    // create File --> New --> Android resourse file --> type (Menu)
 
-    ArrayList<String> deserializedLanguages;
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        // link options menu with main_menu.xml
+
+        MenuInflater menuInflater = getMenuInflater();
+
+        menuInflater.inflate(R.menu.main_menu, menu);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        super.onOptionsItemSelected(item);
+
+        if (item.getItemId() == R.id.english) {
+
+            setLanguage("English");
+
+        } else if (item.getItemId() == R.id.ukrainian) {
+
+            setLanguage("Ukrainian");
+        }
+
+        return true;
+    }
 
     SharedPreferences sharedPreferences;
 
-    TextView languageChosen;
+    TextView languageTextView;
 
     String language;
 
@@ -29,29 +59,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        languageChosen = findViewById(R.id.languageChosen);
+        languageTextView = findViewById(R.id.languageTextView);
 
-        language = languageChosen.getText().toString();
-
-        // SAVE AN ARRAYLIST USING ObjectSerializer
+        language = languageTextView.getText().toString();
 
         sharedPreferences = this.getSharedPreferences("com.example.marynahorshkalova.languagepreferences", Context.MODE_PRIVATE);
 
-        languages = new ArrayList<String>();
-
-        deserializedLanguages = new ArrayList<String>();
-
-        languages.add("English");
-        languages.add("Ukrainian");
-
-        try {
-
-            sharedPreferences.edit().putString("languages", ObjectSerializer.serialize(languages)).apply();
-
-        } catch (IOException e) {
-
-            e.printStackTrace();
-        }
+        String language = sharedPreferences.getString("language", "");
 
         // BUILD ALERT DIALOG
 
@@ -65,36 +79,28 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
 
-                            deserializeLanguage();
-
-                            languageChosen.setText(deserializedLanguages.get(0));
+                            setLanguage("English");
                         }
                     })
                     .setNegativeButton("Ukrainian", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
 
-                            deserializeLanguage();
-
-                            languageChosen.setText(deserializedLanguages.get(1));
+                            setLanguage("Ukrainian");
                         }
                     }).show();
 
         } else {
 
-            Toast.makeText(this, "TextView is not empty!", Toast.LENGTH_SHORT).show();
+            languageTextView.setText(language);
         }
     }
 
-    public void deserializeLanguage() {
+    public void setLanguage(String language) {
 
-        try {
+        sharedPreferences.edit().putString("language", language).apply();
 
-            deserializedLanguages = (ArrayList<String>) ObjectSerializer.deserialize(sharedPreferences.getString("languages", ObjectSerializer.serialize(new ArrayList<String>())));
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        languageTextView.setText(language);
 
     }
 }
